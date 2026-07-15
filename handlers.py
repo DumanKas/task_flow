@@ -146,7 +146,7 @@ async def add_task_description(message: Message, state: FSMContext,dp_pool):
     user_id = message.from_user.id
     categories = await get_user_categories(dp_pool,user_id)
     kb = category_keyboard(categories)
-    await message.edit_text("Выберите категорию: ", reply_markup=kb)
+    await message.answer("Выберите категорию: ", reply_markup=kb)
     await state.set_state(AddTask.category)
 
 @router.callback_query(F.data.startswith('cat_'))
