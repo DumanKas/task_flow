@@ -34,11 +34,12 @@ async def create_tables(pool):
 
 async def add_user(pool, user_id: int, username: str):
     async with pool.acquire() as conn:
-        await conn.fetchrow('''
+        row = await conn.fetchrow('''
         INSERT INTO users(id,username)
         VALUES($1, $2) 
         ON CONFLICT (id) DO UPDATE SET username = $2 
         RETURNING id''', user_id, username)
+        return row['id']
 
 async def add_task(pool, user_id: int, title: str, description: str, category_id: int, deadline,priority: str):
     async with pool.acquire() as conn:
@@ -47,8 +48,21 @@ async def add_task(pool, user_id: int, title: str, description: str, category_id
         VALUES($1, $2, $3, $4, $5, $6)
         RETURNING id''', user_id,title,description,category_id,deadline,priority)
         return row['id']
-    
 
+
+async def add_category(pool,user_id: int, name: str):
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow('''
+        INSERT INTO categories(user_id, name)
+        VALUES($1, $2)
+        RETURNING id''',user_id, name)
+        return row['id']
+    
+async def get_user_category(pool,user_id):
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+        SELECT * from categories
+        WHERE user_id = $1''', user_id)
 async def get_user_tasks(pool, user_id):
     async with pool.acquire() as conn:
         return await conn.fetch('''
@@ -57,7 +71,7 @@ async def get_user_tasks(pool, user_id):
             LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.user_id = $1
         ''', user_id) 
-    
+
 
 async def get_user_categories(pool,user_id: int):
     async with pool.acquire() as conn:
@@ -79,3 +93,19 @@ async def mark_task_done(pool, task_id: int):
     async with pool.acquire() as conn:
         await conn.execute("""
         UPDATE tasks SET status = 'completed' WHERE id = $1""", task_id)
+
+
+async def delete_category(pool, category_id: int, user_id: int):
+    async with pool.acquire() as conn:
+        await conn.execute('''
+        DELETE FROM categories WHERE id = $1 AND user_id = $2''', category_id, user_id)
+
+async def get_stats(pool, user_id: int, days: int):
+    async with pool.acquire() as conn:
+        return await conn.fetchrow('''
+        SELECT 
+            COUNT(*) FILTER (WHERE status = 'completed') as completed,
+            COUNT(*) FILTER (WHERE status = 'pending') as pending
+        FROM tasks
+        WHERE user_id = $1 AND created_at >= NOW() - ($2 || ' days')::interval
+        ''', user_id, str(days))

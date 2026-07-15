@@ -8,7 +8,9 @@ def start_keyboard():
         [InlineKeyboardButton(text='Категории', callback_data='categories')],
         [InlineKeyboardButton(text='Отметка выполнения', callback_data='mark_done')],
         [InlineKeyboardButton(text='Статистика за день/неделю', callback_data='stats')],
-        [InlineKeyboardButton(text = 'Добавить задачу', callback_data = 'add_task_c')]
+        [InlineKeyboardButton(text = 'Добавить задачу', callback_data = 'add_task_c')],
+        [InlineKeyboardButton(text= 'Добавить категорию', callback_data = 'add_category')],
+        [InlineKeyboardButton(text= 'Удалить категорию', callback_data = 'del_category')]
     ])
     return st_k
 
@@ -37,3 +39,19 @@ def mark_done_keyboard(tasks):
             [InlineKeyboardButton(text = f"{tas['title']} | {tas['deadline']}",callback_data= f"finish_{tas['id']}")])
     kb = InlineKeyboardMarkup(inline_keyboard=buttons)
     return kb
+
+
+def delete_category_keyboard(categories):
+    buttons = []
+    for dell in categories:
+        buttons.append(
+            [InlineKeyboardButton(text = f"del {dell['name']}", callback_data= f"del_cat_{dell['id']}")]
+        )
+    kb = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return kb
+
+def stats_period_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text='За день', callback_data='stats_1')],
+        [InlineKeyboardButton(text='За неделю', callback_data='stats_7')]
+    ])
