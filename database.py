@@ -109,3 +109,12 @@ async def get_stats(pool, user_id: int, days: int):
         FROM tasks
         WHERE user_id = $1 AND created_at >= NOW() - ($2 || ' days')::interval
         ''', user_id, str(days))
+    
+async def get_all_user_tasks(pool, user_id: int):
+    async with pool.acquire() as conn:
+        return await conn.fetch('''
+        SELECT id, title, status, deadline, priority
+        FROM tasks
+        WHERE user_id = $1
+        ORDER BY deadline''', user_id)
+    

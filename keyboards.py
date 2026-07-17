@@ -10,7 +10,8 @@ def start_keyboard():
         [InlineKeyboardButton(text='Статистика за день/неделю', callback_data='stats')],
         [InlineKeyboardButton(text = 'Добавить задачу', callback_data = 'add_task_c')],
         [InlineKeyboardButton(text= 'Добавить категорию', callback_data = 'add_category')],
-        [InlineKeyboardButton(text= 'Удалить категорию', callback_data = 'del_category')]
+        [InlineKeyboardButton(text= 'Удалить категорию', callback_data = 'del_category')],
+        [InlineKeyboardButton(text= 'Мои задачи', callback_data='my_task')]
     ])
     return st_k
 

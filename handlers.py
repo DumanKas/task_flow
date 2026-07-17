@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from keyboards import start_keyboard,category_keyboard,priority_keyboard,mark_done_keyboard,delete_category_keyboard,stats_period_keyboard
 from aiogram import F
-from database import add_task,add_user,get_pending_tasks,mark_task_done,add_category,get_user_category,get_user_categories,delete_category,get_stats
+from database import add_task,add_user,get_pending_tasks,mark_task_done,add_category,get_user_category,get_user_categories,delete_category,get_stats,get_all_user_tasks
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from typing import Callable, Dict, Any, Awaitable
@@ -184,6 +184,20 @@ async def mark_done_command(callback: CallbackQuery, dp_pool):
     kb = mark_done_keyboard(mark_done)
     await callback.message.answer('Выберите задачу из списка', reply_markup=kb)
     await callback.answer()
+
+
+@router.callback_query(F.data == 'my_task')
+async def my_task_command(callback: CallbackQuery, dp_pool):
+    user_id = callback.from_user.id
+    get_user_task = await get_all_user_tasks(dp_pool, user_id)
+    if not get_user_task:
+        await callback.message.answer('Задач нет, лучше создать')
+        return
+    text = ''
+    for task in get_user_task:
+        text += f"• {task['title']} | {task['status']} | {task['deadline']}\n"
+    await callback.message.edit_text(text)
+
 
 @router.callback_query(F.data.startswith('finish_'))
 async def mark_done_callback(callback: CallbackQuery, dp_pool):
